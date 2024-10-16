@@ -1,6 +1,5 @@
 package com.kyaw.todolist.screens
 
-import android.os.Build
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -95,7 +94,7 @@ fun EditTodoScreen(
     }) { innerPadding ->
         var todoTitle by remember { mutableStateOf("") }
         var priority by remember { mutableStateOf(Priority.Low) }
-        var selectedDate by remember { mutableStateOf("") }
+        var deadline by remember { mutableStateOf("") }
         var note by remember { mutableStateOf("") }
 
         Column(
@@ -118,9 +117,9 @@ fun EditTodoScreen(
 
             Deadline(
                 modifier = Modifier.padding(16.dp),
-                selectedDate = selectedDate,
+                selectedDate = deadline,
                 onDateSelected = {
-                    selectedDate = it
+                    deadline = it
                 }
             )
 
@@ -202,16 +201,13 @@ private fun Deadline(
         initialSelectedDateMillis = dateToMilliseconds(selectedDate),
         selectableDates = PresentOrFutureSelectableDates
     )
-    val internalSelectedDate = remember {
+    val selectedDate = remember {
         derivedStateOf {
             datePickerState.selectedDateMillis?.let {
                 val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    val date = LocalDate.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
-                    formatter.format(date)
-                } else {
-                    formatter.format(LocalDate.now())
-                }
+                val date = LocalDate.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
+                formatter.format(date)
+
             } ?: "dd/mm/yyyy"
         }
     }
@@ -250,7 +246,7 @@ private fun Deadline(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(12.dp),
-                text = internalSelectedDate.value,
+                text = selectedDate.value,
                 fontFamily = FontFamily.SansSerif,
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
@@ -265,7 +261,7 @@ private fun Deadline(
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            onDateSelected(internalSelectedDate.value)
+                            onDateSelected(selectedDate.value)
                             showDatePicker = false
                         }) {
                         Text(

@@ -50,10 +50,10 @@ import com.kyaw.todolist.ui.theme.TodoListTheme
 import com.kyaw.todolist.ui.theme.onSurfaceVariantLight
 import com.kyaw.todolist.ui.theme.primaryLight
 import com.kyaw.todolist.ui.theme.secondaryContainerLight
+import com.kyaw.todolist.ui.theme.surfaceBrightLight
+import com.kyaw.todolist.ui.theme.surfaceContainerLowLight
 import com.kyaw.todolist.ui.theme.surfaceLight
 import com.kyaw.todolist.ui.theme.tertiaryContainerLightMediumContrast
-import java.time.Instant
-import java.util.Date
 
 @Composable
 fun TodoListScreen(
@@ -176,7 +176,7 @@ fun TodoSection(modifier: Modifier = Modifier, title: String) {
                         priority = Medium,
                         note = "Some note",
                         finished = false,
-                        deadline = Date.from(Instant.now())
+                        deadline = "16/10/2024"
                     )
                 )
             }
@@ -194,8 +194,9 @@ fun TodoItem(modifier: Modifier = Modifier, todo: Todo) {
             .padding(5.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
-            .padding(12.dp).alpha(if (todo.finished) 0.4f else 1f),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(12.dp)
+            .alpha(if (todo.finished) 0.4f else 1f),
+        verticalAlignment = Alignment.Top
     ) {
         Icon(
             painter = painterResource(
@@ -208,16 +209,45 @@ fun TodoItem(modifier: Modifier = Modifier, todo: Todo) {
             modifier = Modifier.size(18.dp),
             tint = primaryLight
         )
-        Spacer(Modifier.width(4.dp))
-        Text(
-            todo.name,
-            fontWeight = FontWeight.Medium,
-            fontSize = 14.sp,
-            color = primaryLight,
-            style = TextStyle.Default.copy(
-                textDecoration = if (todo.finished) TextDecoration.LineThrough else TextDecoration.None
+        Spacer(Modifier.width(8.dp))
+        Column {
+            Text(
+                todo.name,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp,
+                color = primaryLight,
+                style = TextStyle.Default.copy(
+                    textDecoration = if (todo.finished) TextDecoration.LineThrough else TextDecoration.None
+                )
             )
-        )
+            Spacer(Modifier.height(8.dp))
+
+            Row {
+                Text(
+                    text = todo.priority.title(),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = todo.priority.color(),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(todo.priority.color().copy(alpha = 0.12f))
+                        .padding(horizontal = 6.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = todo.deadline,
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = onSurfaceVariantLight,
+                    modifier = Modifier.run {
+                        clip(RoundedCornerShape(12.dp))
+                                        .background(surfaceContainerLowLight)
+                                        .padding(horizontal = 6.dp)
+                    }
+                )
+            }
+        }
+
     }
 }
 

@@ -9,9 +9,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.kyaw.todolist.routes.Route
+import com.kyaw.todolist.screens.states.TodoViewModel
 
 @Composable
-fun AppNavHostScreen(modifier: Modifier = Modifier) {
+fun AppNavHostScreen(
+    viewModel: TodoViewModel,
+    modifier: Modifier = Modifier
+) {
     val navController = rememberNavController()
 
     NavHost(
@@ -45,6 +49,8 @@ fun AppNavHostScreen(modifier: Modifier = Modifier) {
     ) {
         composable<Route.TodoList> {
             TodoListScreen(
+                state = viewModel.state,
+                onAction = viewModel::action,
                 onTapCreate = {
                     navController.navigate(Route.EditTodo)
                 }
@@ -53,6 +59,8 @@ fun AppNavHostScreen(modifier: Modifier = Modifier) {
 
         composable<Route.EditTodo> {
             EditTodoScreen(
+                state = viewModel.state,
+                onAction = viewModel::action,
                 onBack = {
                     navController.popBackStack()
                 }

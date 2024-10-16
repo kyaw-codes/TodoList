@@ -63,6 +63,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyaw.todolist.data.Priority
+import com.kyaw.todolist.screens.states.TodoEvent
+import com.kyaw.todolist.screens.states.TodoState
 import com.kyaw.todolist.ui.theme.TodoListTheme
 import com.kyaw.todolist.ui.theme.onSurfaceVariantLight
 import com.kyaw.todolist.ui.theme.outlineLight
@@ -81,6 +83,8 @@ import java.util.Locale
 @Composable
 fun EditTodoScreen(
     modifier: Modifier = Modifier,
+    state: TodoState,
+    onAction: (TodoEvent) -> Unit,
     onBack: () -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
@@ -92,42 +96,37 @@ fun EditTodoScreen(
             onBack()
         }, scrollState = scrollState)
     }) { innerPadding ->
-        var todoTitle by remember { mutableStateOf("") }
-        var priority by remember { mutableStateOf(Priority.Low) }
-        var deadline by remember { mutableStateOf("") }
-        var note by remember { mutableStateOf("") }
-
         Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .verticalScroll(scrollState)
                 .padding(innerPadding)
         ) {
-            TitleTextField(modifier, todoTitle = todoTitle) {
-                todoTitle = it
+            TitleTextField(modifier, todoTitle = state.todo?.name ?: "") {
+                onAction(TodoEvent.NameEditing(it))
             }
 
             PriorityBadge(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                priority = priority,
+                priority = state.todo?.priority ?: Priority.Low,
                 onClick = {
-                    priority = it
+                    onAction(TodoEvent.PriorityEditing(it))
                 }
             )
 
             Deadline(
                 modifier = Modifier.padding(16.dp),
-                deadline = deadline,
+                deadline = state.todo?.deadline ?: "",
                 onDateSelected = {
-                    deadline = it
+                    onAction(TodoEvent.DeadlineEditing(it))
                 }
             )
 
             Note(
                 modifier = Modifier.padding(16.dp),
-                note = note,
+                note = state.todo?.note ?: "",
                 onNoteChange = {
-                    note = it
+                    onAction(TodoEvent.NoteEditing(it))
                 }
             )
         }
@@ -503,6 +502,9 @@ object PresentOrFutureSelectableDates : SelectableDates {
 @Composable
 private fun EditTodoScreenPreview() {
     TodoListTheme {
-        EditTodoScreen()
+        EditTodoScreen(
+            state = TodoState(),
+            onAction = {},
+            onBack = {})
     }
 }

@@ -42,9 +42,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyaw.todolist.R
 import com.kyaw.todolist.data.Priority.Medium
 import com.kyaw.todolist.data.Todo
+import com.kyaw.todolist.screens.states.TodoEvent
+import com.kyaw.todolist.screens.states.TodoState
+import com.kyaw.todolist.screens.states.TodoViewModel
 import com.kyaw.todolist.ui.theme.TodoListTheme
 import com.kyaw.todolist.ui.theme.onSurfaceVariantLight
 import com.kyaw.todolist.ui.theme.primaryLight
@@ -55,14 +59,21 @@ import com.kyaw.todolist.ui.theme.tertiaryContainerLightMediumContrast
 
 @Composable
 fun TodoListScreen(
-    onTapCreate: () -> Unit, modifier: Modifier = Modifier
+    onTapCreate: () -> Unit, modifier: Modifier = Modifier,
+    state: TodoState,
+    onAction: (TodoEvent) -> Unit,
 ) {
     val scrollState = rememberScrollState()
 
     Scaffold(
         modifier = modifier,
         topBar = { TopAppBar() },
-        bottomBar = { BottomBar(onTapCreate = onTapCreate) },
+        bottomBar = {
+            BottomBar(onTapCreate = {
+                onTapCreate()
+                onAction(TodoEvent.AddNewButtonTap)
+            })
+        },
         containerColor = secondaryContainerLight
     ) { innerPadding ->
         Column(
@@ -72,8 +83,7 @@ fun TodoListScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
         ) {
-            TodoSection(title = "Todo")
-            TodoSection(title = "Completed")
+            Text(state.todoList.toString())
         }
     }
 }
@@ -256,6 +266,9 @@ fun TodoItem(modifier: Modifier = Modifier, todo: Todo) {
 @Composable
 private fun TodoListScreenPreview() {
     TodoListTheme {
-        TodoListScreen({})
+        TodoListScreen(
+            state = TodoState(),
+            onAction = {},
+            onTapCreate = {})
     }
 }

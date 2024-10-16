@@ -117,7 +117,7 @@ fun EditTodoScreen(
 
             Deadline(
                 modifier = Modifier.padding(16.dp),
-                selectedDate = deadline,
+                deadline = deadline,
                 onDateSelected = {
                     deadline = it
                 }
@@ -193,12 +193,12 @@ fun Note(modifier: Modifier = Modifier, note: String, onNoteChange: (String) -> 
 @Composable
 private fun Deadline(
     modifier: Modifier = Modifier,
-    selectedDate: String,
+    deadline: String,
     onDateSelected: (String) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = dateToMilliseconds(selectedDate),
+        initialSelectedDateMillis = dateToMilliseconds(deadline),
         selectableDates = PresentOrFutureSelectableDates
     )
     val selectedDate = remember {

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
@@ -14,9 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -50,7 +49,6 @@ import com.kyaw.todolist.ui.theme.TodoListTheme
 import com.kyaw.todolist.ui.theme.onSurfaceVariantLight
 import com.kyaw.todolist.ui.theme.primaryLight
 import com.kyaw.todolist.ui.theme.secondaryContainerLight
-import com.kyaw.todolist.ui.theme.surfaceBrightLight
 import com.kyaw.todolist.ui.theme.surfaceContainerLowLight
 import com.kyaw.todolist.ui.theme.surfaceLight
 import com.kyaw.todolist.ui.theme.tertiaryContainerLightMediumContrast
@@ -59,6 +57,8 @@ import com.kyaw.todolist.ui.theme.tertiaryContainerLightMediumContrast
 fun TodoListScreen(
     onTapCreate: () -> Unit, modifier: Modifier = Modifier
 ) {
+    val scrollState = rememberScrollState()
+
     Scaffold(
         modifier = modifier,
         topBar = { TopAppBar() },
@@ -67,12 +67,12 @@ fun TodoListScreen(
     ) { innerPadding ->
         Column(
             modifier = modifier
-                .fillMaxHeight()
+                .fillMaxWidth()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState)
         ) {
             TodoSection(title = "Todo")
-
             TodoSection(title = "Completed")
         }
     }
@@ -167,21 +167,18 @@ fun TodoSection(modifier: Modifier = Modifier, title: String) {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items((0..<10).map { it }) {
-                TodoItem(
-                    todo = Todo(
-                        id = 1,
-                        name = "Todo 1",
-                        priority = Medium,
-                        note = "Some note",
-                        finished = false,
-                        deadline = "16/10/2024"
-                    )
+        for (i in 0..<10) {
+            TodoItem(
+                todo = Todo(
+                    id = 1,
+                    name = "Todo 1",
+                    priority = Medium,
+                    note = "Some note",
+                    finished = false,
+                    deadline = "16/10/2024"
                 )
-            }
+            )
         }
-
         Spacer(modifier = Modifier.height(18.dp))
     }
 }
@@ -230,7 +227,11 @@ fun TodoItem(modifier: Modifier = Modifier, todo: Todo) {
                     color = todo.priority.color(),
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(todo.priority.color().copy(alpha = 0.12f))
+                        .background(
+                            todo.priority
+                                .color()
+                                .copy(alpha = 0.12f)
+                        )
                         .padding(horizontal = 6.dp)
                 )
                 Spacer(Modifier.width(8.dp))
@@ -241,8 +242,8 @@ fun TodoItem(modifier: Modifier = Modifier, todo: Todo) {
                     color = onSurfaceVariantLight,
                     modifier = Modifier.run {
                         clip(RoundedCornerShape(12.dp))
-                                        .background(surfaceContainerLowLight)
-                                        .padding(horizontal = 6.dp)
+                            .background(surfaceContainerLowLight)
+                            .padding(horizontal = 6.dp)
                     }
                 )
             }

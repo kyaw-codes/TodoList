@@ -29,6 +29,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -42,13 +44,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyaw.todolist.R
 import com.kyaw.todolist.data.Priority.Medium
 import com.kyaw.todolist.data.Todo
 import com.kyaw.todolist.screens.states.TodoEvent
 import com.kyaw.todolist.screens.states.TodoState
-import com.kyaw.todolist.screens.states.TodoViewModel
+import com.kyaw.todolist.screens.states.asState
 import com.kyaw.todolist.ui.theme.TodoListTheme
 import com.kyaw.todolist.ui.theme.onSurfaceVariantLight
 import com.kyaw.todolist.ui.theme.primaryLight
@@ -56,11 +57,12 @@ import com.kyaw.todolist.ui.theme.secondaryContainerLight
 import com.kyaw.todolist.ui.theme.surfaceContainerLowLight
 import com.kyaw.todolist.ui.theme.surfaceLight
 import com.kyaw.todolist.ui.theme.tertiaryContainerLightMediumContrast
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun TodoListScreen(
     onTapCreate: () -> Unit, modifier: Modifier = Modifier,
-    state: TodoState,
+    state: State<TodoState>,
     onAction: (TodoEvent) -> Unit,
 ) {
     val scrollState = rememberScrollState()
@@ -83,7 +85,7 @@ fun TodoListScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
         ) {
-            Text(state.todoList.toString())
+            Text(state.value.todoList.toString())
         }
     }
 }
@@ -267,7 +269,7 @@ fun TodoItem(modifier: Modifier = Modifier, todo: Todo) {
 private fun TodoListScreenPreview() {
     TodoListTheme {
         TodoListScreen(
-            state = TodoState(),
+            state = TodoState().asState(),
             onAction = {},
             onTapCreate = {})
     }

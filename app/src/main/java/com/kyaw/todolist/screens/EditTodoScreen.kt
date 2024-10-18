@@ -1,5 +1,6 @@
 package com.kyaw.todolist.screens
 
+import android.util.Log
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +44,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +68,7 @@ import androidx.compose.ui.unit.sp
 import com.kyaw.todolist.data.Priority
 import com.kyaw.todolist.screens.states.TodoEvent
 import com.kyaw.todolist.screens.states.TodoState
+import com.kyaw.todolist.screens.states.asState
 import com.kyaw.todolist.ui.theme.TodoListTheme
 import com.kyaw.todolist.ui.theme.onSurfaceVariantLight
 import com.kyaw.todolist.ui.theme.outlineLight
@@ -73,6 +77,7 @@ import com.kyaw.todolist.ui.theme.primaryLight
 import com.kyaw.todolist.ui.theme.scrimLight
 import com.kyaw.todolist.ui.theme.surfaceContainerHighLight
 import com.kyaw.todolist.ui.theme.surfaceLight
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -83,7 +88,7 @@ import java.util.Locale
 @Composable
 fun EditTodoScreen(
     modifier: Modifier = Modifier,
-    state: TodoState,
+    state: State<TodoState>,
     onAction: (TodoEvent) -> Unit,
     onBack: () -> Unit = {}
 ) {
@@ -91,10 +96,17 @@ fun EditTodoScreen(
     val scrollState = rememberScrollState()
 
     Scaffold(modifier = modifier, containerColor = surfaceLight, topBar = {
-        AppBar(onBack = {
-            focusManager.clearFocus()
-            onBack()
-        }, scrollState = scrollState)
+        AppBar(
+            onBack = {
+                focusManager.clearFocus()
+                onBack()
+            },
+            onSave = {
+                onAction(TodoEvent.SaveTodo)
+                onBack()
+            },
+            scrollState = scrollState
+        )
     }) { innerPadding ->
         Column(
             modifier = Modifier
@@ -102,31 +114,32 @@ fun EditTodoScreen(
                 .verticalScroll(scrollState)
                 .padding(innerPadding)
         ) {
-            TitleTextField(modifier, todoTitle = state.todo?.name ?: "") {
-                onAction(TodoEvent.NameEditing(it))
+            TitleTextField(modifier, todoTitle = state.value.todo?.name ?: "") {
+                Log.d("stateDebug", "Name editing event sent.")
+                onAction(TodoEvent.EditingName(it))
             }
 
             PriorityBadge(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                priority = state.todo?.priority ?: Priority.Low,
+                priority = state.value.todo?.priority ?: Priority.Low,
                 onClick = {
-                    onAction(TodoEvent.PriorityEditing(it))
+                    onAction(TodoEvent.EditingPriority(it))
                 }
             )
 
             Deadline(
                 modifier = Modifier.padding(16.dp),
-                deadline = state.todo?.deadline ?: "",
+                deadline = state.value.todo?.deadline ?: "",
                 onDateSelected = {
-                    onAction(TodoEvent.DeadlineEditing(it))
+                    onAction(TodoEvent.EditingDeadline(it))
                 }
             )
 
             Note(
                 modifier = Modifier.padding(16.dp),
-                note = state.todo?.note ?: "",
+                note = state.value.todo?.note ?: "",
                 onNoteChange = {
-                    onAction(TodoEvent.NoteEditing(it))
+                    onAction(TodoEvent.EditingNote(it))
                 }
             )
         }
@@ -454,7 +467,7 @@ private fun TitleTextField(modifier: Modifier, todoTitle: String, onValueChange:
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppBar(onBack: () -> Unit = {}, scrollState: ScrollState) {
+private fun AppBar(onBack: () -> Unit = {}, onSave: () -> Unit, scrollState: ScrollState) {
     androidx.compose.material3.TopAppBar(
         title = {
             Text("")
@@ -472,9 +485,7 @@ private fun AppBar(onBack: () -> Unit = {}, scrollState: ScrollState) {
             }
         },
         actions = {
-            TextButton(onClick = {
-
-            }) {
+            TextButton(onClick = onSave) {
                 Text(
                     "Save",
                     fontSize = 16.sp,
@@ -503,7 +514,7 @@ object PresentOrFutureSelectableDates : SelectableDates {
 private fun EditTodoScreenPreview() {
     TodoListTheme {
         EditTodoScreen(
-            state = TodoState(),
+            state = TodoState().asState(),
             onAction = {},
             onBack = {})
     }

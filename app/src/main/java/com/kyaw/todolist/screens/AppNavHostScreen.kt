@@ -4,6 +4,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -49,7 +50,7 @@ fun AppNavHostScreen(
     ) {
         composable<Route.TodoList> {
             TodoListScreen(
-                state = viewModel.state,
+                state = viewModel.state.collectAsState(),
                 onAction = viewModel::action,
                 onTapCreate = {
                     navController.navigate(Route.EditTodo)
@@ -59,7 +60,7 @@ fun AppNavHostScreen(
 
         composable<Route.EditTodo> {
             EditTodoScreen(
-                state = viewModel.state,
+                state = viewModel.state.collectAsState(),
                 onAction = viewModel::action,
                 onBack = {
                     navController.popBackStack()

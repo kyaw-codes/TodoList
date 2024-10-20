@@ -1,11 +1,15 @@
 package com.kyaw.todolist.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
@@ -13,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +35,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -42,6 +50,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyaw.todolist.R
@@ -61,12 +70,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun TodoListScreen(
-    onTapCreate: () -> Unit, modifier: Modifier = Modifier,
+    onTapCreate: () -> Unit,
+    onTapItem: (todo: Todo) -> Unit,
     state: State<TodoState>,
     onAction: (TodoEvent) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val scrollState = rememberScrollState()
-
     Scaffold(
         modifier = modifier,
         topBar = { TopAppBar() },
@@ -81,12 +90,30 @@ fun TodoListScreen(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(scrollState)
+                .padding(
+                    top = innerPadding.calculateTopPadding()
+                )
+                .padding(
+                    horizontal = innerPadding.calculateStartPadding(LayoutDirection.Ltr)
+                )
         ) {
-            Text(state.value.todoList.toString())
+            TodoSection(
+                title = "All",
+                data = state.value.todoList,
+                onTapItem = onTapItem,
+                onToggleItem = {
+                    onAction(TodoEvent.ToggleTodo(it))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 16.dp)
+            )
         }
+    }
+
+    LaunchedEffect(state.value.todoList) {
+        Log.d("Todo", "State change ${state.value}")
     }
 }
 
@@ -167,7 +194,13 @@ private fun BottomBar(
 }
 
 @Composable
-fun TodoSection(modifier: Modifier = Modifier, title: String) {
+fun TodoSection(
+    title: String,
+    data: List<Todo>,
+    modifier: Modifier = Modifier,
+    onTapItem: (todo: Todo) -> Unit,
+    onToggleItem: (todo: Todo) -> Unit
+) {
     Column(modifier = modifier) {
         Text(
             text = title,
@@ -179,28 +212,40 @@ fun TodoSection(modifier: Modifier = Modifier, title: String) {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        for (i in 0..<10) {
-            TodoItem(
-                todo = Todo(
-                    id = 1,
-                    name = "Todo 1",
-                    priority = Medium,
-                    note = "Some note",
-                    finished = false,
-                    deadline = "16/10/2024"
+        LazyColumn(
+            contentPadding = PaddingValues(bottom = 64.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            items(data, key = { it.id }) {
+                TodoItem(
+                    todo = it,
+                    onTapItem = onTapItem,
+                    onToggleItem = onToggleItem
                 )
-            )
+            }
         }
         Spacer(modifier = Modifier.height(18.dp))
     }
 }
 
 @Composable
-fun TodoItem(modifier: Modifier = Modifier, todo: Todo) {
+fun TodoItem(
+    modifier: Modifier = Modifier,
+    todo: Todo,
+    onTapItem: (todo: Todo) -> Unit,
+    onToggleItem: (todo: Todo) -> Unit
+) {
+    SideEffect {
+        Log.d("Todo", "Item rendered -> $todo")
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(5.dp)
+            .clickable { onTapItem(todo) }
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
             .padding(12.dp)
@@ -215,7 +260,8 @@ fun TodoItem(modifier: Modifier = Modifier, todo: Todo) {
                     R.drawable.baseline_radio_button_unchecked_24
             ),
             contentDescription = "check",
-            modifier = Modifier.size(18.dp),
+            modifier = Modifier.size(18.dp)
+                .clickable { onToggleItem(todo) },
             tint = primaryLight
         )
         Spacer(Modifier.width(8.dp))
@@ -271,6 +317,8 @@ private fun TodoListScreenPreview() {
         TodoListScreen(
             state = TodoState().asState(),
             onAction = {},
-            onTapCreate = {})
+            onTapCreate = {},
+            onTapItem = {}
+        )
     }
 }

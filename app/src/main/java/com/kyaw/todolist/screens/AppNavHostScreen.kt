@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.kyaw.todolist.routes.Route
 import com.kyaw.todolist.screens.states.TodoViewModel
 
@@ -53,13 +54,17 @@ fun AppNavHostScreen(
                 state = viewModel.state.collectAsState(),
                 onAction = viewModel::action,
                 onTapCreate = {
-                    navController.navigate(Route.EditTodo)
+                    navController.navigate(Route.EditTodo())
+                },
+                onTapItem = {
+                    navController.navigate(Route.EditTodo(it.id))
                 }
             )
         }
 
         composable<Route.EditTodo> {
             EditTodoScreen(
+                id = it.toRoute<Route.EditTodo>().id,
                 state = viewModel.state.collectAsState(),
                 onAction = viewModel::action,
                 onBack = {

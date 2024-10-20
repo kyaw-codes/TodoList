@@ -87,6 +87,7 @@ import java.util.Locale
 
 @Composable
 fun EditTodoScreen(
+    id: Int?,
     modifier: Modifier = Modifier,
     state: State<TodoState>,
     onAction: (TodoEvent) -> Unit,
@@ -143,6 +144,10 @@ fun EditTodoScreen(
                 }
             )
         }
+    }
+
+    LaunchedEffect(Unit) {
+        id?.let { onAction(TodoEvent.EditTodo(it)) }
     }
 }
 
@@ -514,8 +519,10 @@ object PresentOrFutureSelectableDates : SelectableDates {
 private fun EditTodoScreenPreview() {
     TodoListTheme {
         EditTodoScreen(
+            id = null,
             state = TodoState().asState(),
             onAction = {},
-            onBack = {})
+            onBack = {}
+        )
     }
 }

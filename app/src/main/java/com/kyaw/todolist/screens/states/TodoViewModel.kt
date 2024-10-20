@@ -1,5 +1,6 @@
 package com.kyaw.todolist.screens.states
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -12,15 +13,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class TodoViewModel(private val repo: TodoRepository): ViewModel() {
+
+
     private var _state = MutableStateFlow(TodoState())
     val state = _state.asStateFlow()
 
     fun action(event: TodoEvent) {
         when (event) {
-            is TodoEvent.GetAllTodos -> _state.update {
-                it.copy(todoList = repo.getAll())
+            TodoEvent.GetAllTodos -> _state.update {
+                TodoState(todoList = repo.getAll())
             }
-            is TodoEvent.AddNewButtonTap -> _state.update {
+            TodoEvent.AddNewButtonTap -> _state.update {
                 it.copy(todo = Todo())
             }
             is TodoEvent.EditingDeadline -> _state.update {
@@ -35,9 +38,23 @@ class TodoViewModel(private val repo: TodoRepository): ViewModel() {
             is TodoEvent.EditingPriority -> _state.update {
                 it.copy(todo = it.todo?.copy(priority = event.priority))
             }
-            is TodoEvent.SaveTodo -> _state.value.todo?.let {
-                repo.addNew(it)
+            TodoEvent.SaveTodo -> _state.value.todo?.let {
+                // id == 0 means a new todo
+                if (it.id == 0) {
+                    repo.addNew(it)
+                } else {
+                    repo.save(it)
+                }
                 action(TodoEvent.GetAllTodos)
+            }
+
+            is TodoEvent.ToggleTodo -> {
+                repo.toggle(event.data.id)
+                _state.update { TodoState(todoList = repo.getAll()) }
+            }
+
+            is TodoEvent.EditTodo -> repo.getById(event.id)?.let { data ->
+                _state.update { it.copy(todo = data) }
             }
         }
     }

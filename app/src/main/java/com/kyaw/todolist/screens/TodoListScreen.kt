@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -94,7 +96,7 @@ fun TodoListScreen(
         ) {
             TodoSection(
                 title = "All",
-                data = state.value.todoList,
+                data = state.value,
                 onTapItem = onTapItem,
                 onToggleItem = {
                     onAction(TodoEvent.ToggleTodo(it))
@@ -105,10 +107,6 @@ fun TodoListScreen(
                     .padding(horizontal = 16.dp)
             )
         }
-    }
-
-    LaunchedEffect(state.value.todoList) {
-        Log.d("Todo", "State change ${state.value}")
     }
 }
 
@@ -191,7 +189,7 @@ private fun BottomBar(
 @Composable
 fun TodoSection(
     title: String,
-    data: List<Todo>,
+    data: TodoState,
     modifier: Modifier = Modifier,
     onTapItem: (todo: Todo) -> Unit,
     onToggleItem: (todo: Todo) -> Unit
@@ -215,7 +213,7 @@ fun TodoSection(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            items(data, key = { it.id }) {
+            items(data.todoList, key = { it.id }) {
                 TodoItem(
                     todo = it,
                     onTapItem = onTapItem,
@@ -240,8 +238,8 @@ fun TodoItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onTapItem(todo) }
             .clip(RoundedCornerShape(12.dp))
+            .clickable { onTapItem(todo) }
             .background(Color.White)
             .padding(12.dp)
             .alpha(if (todo.finished) 0.4f else 1f),
@@ -256,6 +254,7 @@ fun TodoItem(
             ),
             contentDescription = "check",
             modifier = Modifier.size(18.dp)
+                .clip(CircleShape)
                 .clickable { onToggleItem(todo) },
             tint = primaryLight
         )

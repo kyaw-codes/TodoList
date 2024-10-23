@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -57,6 +58,12 @@ dependencies {
     androidTestImplementation(libs.androidx.navigation.testing)
 
     implementation(libs.kotlinx.serialization.json)
+
+    val room_version = "2.5.2"
+
+    implementation("androidx.room:room-ktx:$room_version")
+    // To use Kotlin annotation processing tool (kapt)
+    ksp("androidx.room:room-compiler:$room_version")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

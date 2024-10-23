@@ -120,7 +120,7 @@ fun EditTodoScreen(
 
             PriorityBadge(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                priority = state.value.todo?.priority ?: Priority.Low,
+                priority = state.value.todo?.priority ?: Priority.LOW,
                 onClick = {
                     onAction(TodoEvent.EditingPriority(it))
                 }

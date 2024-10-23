@@ -26,7 +26,7 @@ import com.kyaw.todolist.ui.theme.onSurfaceVariantLight
 import com.kyaw.todolist.ui.theme.secondaryContainerLightMediumContrast
 
 @Composable
-fun EmptyTodoView(modifier: Modifier = Modifier) {
+fun EmptyTodoView(modifier: Modifier = Modifier, message: String? = null) {
     Column(
         modifier = modifier
             .background(Color.Transparent)
@@ -41,7 +41,7 @@ fun EmptyTodoView(modifier: Modifier = Modifier) {
                 .width(150.dp)
                 .height(70.dp),
             painter = painterResource(R.drawable.ic_empty_todo),
-            contentDescription = "Empty Todo"
+            contentDescription = "Oops! It's Empty"
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -57,7 +57,7 @@ fun EmptyTodoView(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            "Add a new todo item and it will show up here.",
+            message ?: "Add a new todo item and it will show up here.",
             fontSize = 18.sp,
             fontFamily = FontFamily.SansSerif,
             color = secondaryContainerLightMediumContrast,

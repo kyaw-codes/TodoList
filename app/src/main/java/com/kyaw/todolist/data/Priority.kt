@@ -1,20 +1,27 @@
 package com.kyaw.todolist.data
 
 import androidx.compose.ui.graphics.Color
+import com.kyaw.todolist.screens.states.TodoFilterType
 import com.kyaw.todolist.ui.theme.errorContainerLightMediumContrast
 
 enum class Priority {
-    High, Medium, Low;
+    HIGH, MEDIUM, LOW;
 
     fun color() = when (this) {
-        High -> errorContainerLightMediumContrast
-        Medium -> Color(0xFFFF9800)
-        Low -> Color(0xFF2196F3)
+        HIGH -> errorContainerLightMediumContrast
+        MEDIUM -> Color(0xFFFF9800)
+        LOW -> Color(0xFF2196F3)
     }
 
     fun title() = when (this) {
-        High -> "High"
-        Medium -> "Medium"
-        Low -> "Low"
+        HIGH -> "High"
+        MEDIUM -> "Medium"
+        LOW -> "Low"
+    }
+
+    fun toFilter() = when (this) {
+        HIGH -> TodoFilterType.HIGH
+        MEDIUM -> TodoFilterType.MEDIUM
+        LOW -> TodoFilterType.LOW
     }
 }

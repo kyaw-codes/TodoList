@@ -35,7 +35,9 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,12 +46,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -64,19 +71,25 @@ import com.kyaw.todolist.R
 import com.kyaw.todolist.components.Drag
 import com.kyaw.todolist.components.EmptyTodoView
 import com.kyaw.todolist.components.HorizontalSwipeRevealLayout
+import com.kyaw.todolist.data.Priority
 import com.kyaw.todolist.data.Todo
 import com.kyaw.todolist.screens.states.TodoEvent
+import com.kyaw.todolist.screens.states.TodoFilterType
 import com.kyaw.todolist.screens.states.TodoState
 import com.kyaw.todolist.screens.states.asState
 import com.kyaw.todolist.ui.theme.TodoListTheme
+import com.kyaw.todolist.ui.theme.errorContainerDarkMediumContrast
 import com.kyaw.todolist.ui.theme.errorContainerLightMediumContrast
 import com.kyaw.todolist.ui.theme.onSurfaceVariantLight
+import com.kyaw.todolist.ui.theme.outlineLight
 import com.kyaw.todolist.ui.theme.primaryLight
 import com.kyaw.todolist.ui.theme.primaryLightMediumContrast
 import com.kyaw.todolist.ui.theme.secondaryContainerLight
 import com.kyaw.todolist.ui.theme.surfaceContainerLowLight
+import com.kyaw.todolist.ui.theme.surfaceDimLight
 import com.kyaw.todolist.ui.theme.surfaceLight
 import com.kyaw.todolist.ui.theme.tertiaryContainerLightMediumContrast
+import com.kyaw.todolist.ui.theme.tertiaryLight
 import kotlinx.coroutines.launch
 
 @Composable
@@ -91,10 +104,16 @@ fun TodoListScreen(
         modifier = modifier,
         topBar = { TopAppBar() },
         bottomBar = {
-            BottomBar(onTapCreate = {
-                onTapCreate()
-                onAction(TodoEvent.AddNewButtonTap)
-            })
+            BottomBar(
+                filterTitle = state.value.filterType.title(),
+                onTapCreate = {
+                    onTapCreate()
+                    onAction(TodoEvent.AddNewButtonTap)
+                },
+                onFilter = {
+                    onAction(TodoEvent.Filter(it))
+                }
+            )
         },
         containerColor = secondaryContainerLight
     ) { innerPadding ->
@@ -105,7 +124,7 @@ fun TodoListScreen(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                EmptyTodoView()
+                EmptyTodoView(message = state.value.filterType.emptyStateMessage())
             }
         } else {
             Column(
@@ -119,7 +138,7 @@ fun TodoListScreen(
                     )
             ) {
                 TodoSection(
-                    title = "All",
+                    title = state.value.filterType.title(),
                     data = state.value,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -157,9 +176,12 @@ private fun TopAppBar(modifier: Modifier = Modifier) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomBar(
-    onTapCreate: () -> Unit
+    filterTitle: String,
+    onTapCreate: () -> Unit,
+    onFilter: (TodoFilterType) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -192,24 +214,154 @@ private fun BottomBar(
             }
         }
 
-        TextButton(colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            contentColor = tertiaryContainerLightMediumContrast
-        ), onClick = {}) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "All",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = FontFamily.SansSerif
-                )
-                Icon(
-                    imageVector = Icons.Outlined.KeyboardArrowDown,
-                    contentDescription = "All",
-                    tint = tertiaryContainerLightMediumContrast,
-                    modifier = Modifier.size(20.dp)
-                )
+        var expanded by remember { mutableStateOf(false) }
+        val focusRequester = remember {
+            FocusRequester()
+        }
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            TextButton(
+                modifier = Modifier
+                    .menuAnchor(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = tertiaryContainerLightMediumContrast
+                ),
+                onClick = { expanded = true }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        filterTitle,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.SansSerif
+                    )
+                    Icon(
+                        imageVector = Icons.Outlined.KeyboardArrowDown,
+                        contentDescription = filterTitle,
+                        tint = tertiaryContainerLightMediumContrast,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
+
+            ExposedDropdownMenu(
+                modifier = Modifier
+                    .width(200.dp)
+                    .focusRequester(focusRequester)
+                    .background(surfaceLight),
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                Column {
+                    Priority.entries.forEach {
+                        DropdownMenuItem(
+                            text = {
+                                Row {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .clip(RoundedCornerShape(5.dp))
+                                            .background(it.color())
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = it.title(),
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        fontFamily = FontFamily.SansSerif,
+                                        color = onSurfaceVariantLight
+                                    )
+                                }
+                            },
+                            onClick = {
+                                onFilter(it.toFilter())
+                                expanded = false
+                            }
+                        )
+                    }
+                    DropdownMenuItem(
+                        text = {
+                            Row {
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .clip(RoundedCornerShape(5.dp))
+                                        .background(errorContainerDarkMediumContrast)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Todo",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    fontFamily = FontFamily.SansSerif,
+                                    color = onSurfaceVariantLight
+                                )
+                            }
+                        },
+                        onClick = {
+                            onFilter(TodoFilterType.TODO)
+                            expanded = false
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = {
+                            Row {
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .clip(RoundedCornerShape(5.dp))
+                                        .background(tertiaryLight)
+                                )
+
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Completed",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    fontFamily = FontFamily.SansSerif,
+                                    color = onSurfaceVariantLight
+                                )
+                            }
+                        },
+                        onClick = {
+                            onFilter(TodoFilterType.COMPLETED)
+                            expanded = false
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = {
+                            Row {
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .clip(RoundedCornerShape(5.dp))
+                                        .background(surfaceDimLight)
+                                )
+
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "All",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    fontFamily = FontFamily.SansSerif,
+                                    color = outlineLight
+                                )
+                            }
+                        },
+                        onClick = {
+                            onFilter(TodoFilterType.ALL)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+
         }
     }
 }
@@ -365,7 +517,7 @@ fun TodoItem(
                 Text(
                     todo.title,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp,
+                    fontSize = 18.sp,
                     color = primaryLight,
                     style = TextStyle.Default.copy(
                         textDecoration = if (todo.finished) TextDecoration.LineThrough else TextDecoration.None
@@ -376,8 +528,9 @@ fun TodoItem(
                 Row {
                     Text(
                         text = todo.priority.title(),
-                        fontSize = 8.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.SansSerif,
                         color = todo.priority.color(),
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
@@ -386,18 +539,19 @@ fun TodoItem(
                                     .color()
                                     .copy(alpha = 0.12f)
                             )
-                            .padding(horizontal = 6.dp)
+                            .padding(horizontal = 8.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = todo.deadline,
-                        fontSize = 8.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.SansSerif,
                         color = onSurfaceVariantLight,
                         modifier = Modifier.run {
                             clip(RoundedCornerShape(12.dp))
                                 .background(surfaceContainerLowLight)
-                                .padding(horizontal = 6.dp)
+                                .padding(horizontal = 8.dp)
                         }
                     )
                 }

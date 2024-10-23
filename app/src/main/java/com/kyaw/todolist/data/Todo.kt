@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class Todo(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String = "",
-    val priority: Priority = Priority.Low,
+    val priority: Priority = Priority.LOW,
     val deadline: String = "",
     val note: String = "",
     var finished: Boolean = false

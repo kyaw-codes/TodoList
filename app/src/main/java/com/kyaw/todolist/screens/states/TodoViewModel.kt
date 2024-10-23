@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.kyaw.todolist.data.Priority
 import com.kyaw.todolist.data.Todo
 import com.kyaw.todolist.di.TodoProviders
 import com.kyaw.todolist.repository.TodoRepository
@@ -23,10 +24,10 @@ class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
 
     private var _state = MutableStateFlow(TodoState())
     val state: StateFlow<TodoState> = _state.onStart {
-            action(TodoEvent.GetAllTodos)
-        }.stateIn(
-            viewModelScope, SharingStarted.WhileSubscribed(5000), TodoState()
-        )
+        action(TodoEvent.GetAllTodos)
+    }.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), TodoState()
+    )
 
     fun action(event: TodoEvent) {
         viewModelScope.launch {
@@ -100,6 +101,49 @@ class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
                     val list = repo.delete(event.id)
                     _state.update {
                         it.copy(todoList = list)
+                    }
+                }
+
+                is TodoEvent.Filter -> {
+                    val filterType = event.type
+                    val list = repo.getAll()
+                    _state.update { it.copy(filterType = filterType) }
+                    when (filterType) {
+                        TodoFilterType.HIGH -> {
+                            _state.update { state ->
+                                state.copy(todoList = list.filter { it.priority == Priority.HIGH })
+                            }
+                        }
+
+                        TodoFilterType.MEDIUM -> {
+                            _state.update { state ->
+                                state.copy(todoList = list.filter { it.priority == Priority.MEDIUM })
+                            }
+                        }
+
+                        TodoFilterType.LOW -> {
+                            _state.update { state ->
+                                state.copy(todoList = list.filter { it.priority == Priority.LOW })
+                            }
+                        }
+
+                        TodoFilterType.TODO -> {
+                            _state.update { state ->
+                                state.copy(todoList = list.filter { !it.finished })
+                            }
+                        }
+
+                        TodoFilterType.COMPLETED -> {
+                            _state.update { state ->
+                                state.copy(todoList = list.filter { it.finished })
+                            }
+                        }
+
+                        TodoFilterType.ALL -> {
+                            _state.update {
+                                it.copy(todoList = list)
+                            }
+                        }
                     }
                 }
             }

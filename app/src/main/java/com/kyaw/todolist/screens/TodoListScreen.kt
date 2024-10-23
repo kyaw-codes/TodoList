@@ -1,5 +1,15 @@
 package com.kyaw.todolist.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -117,16 +127,12 @@ fun TodoListScreen(
         },
         containerColor = secondaryContainerLight
     ) { innerPadding ->
-        if (state.value.todoList.isEmpty()) {
-            Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                EmptyTodoView(message = state.value.filterType.emptyStateMessage())
-            }
-        } else {
+
+        AnimatedVisibility(
+            visible = state.value.todoList.isNotEmpty(),
+            enter = slideInVertically() + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { -it })
+        ) {
             Column(
                 modifier = modifier
                     .fillMaxWidth()
@@ -152,6 +158,26 @@ fun TodoListScreen(
                         onAction(TodoEvent.DeleteTodo(it.id))
                     }
                 )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = state.value.todoList.isEmpty(),
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut()
+        ) {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = innerPadding.calculateTopPadding()
+                    )
+                    .padding(
+                        horizontal = innerPadding.calculateStartPadding(LayoutDirection.Ltr)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                EmptyTodoView(message = state.value.filterType.emptyStateMessage())
             }
         }
     }

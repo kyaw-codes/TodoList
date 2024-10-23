@@ -140,7 +140,7 @@ fun EditTodoScreen(
                     }
                 )
             }
-//
+
             Note(
                 modifier = Modifier.padding(16.dp),
                 note = state.value.todo?.note ?: "",

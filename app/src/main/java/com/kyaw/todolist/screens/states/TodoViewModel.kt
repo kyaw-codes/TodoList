@@ -1,5 +1,6 @@
 package com.kyaw.todolist.screens.states
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -10,11 +11,14 @@ import com.kyaw.todolist.repository.TodoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Date
+import java.util.Locale
 
 class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
 
@@ -30,8 +34,9 @@ class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
 
             TodoEvent.AddNewButtonTap -> _state.update {
                 it.copy(todo = Todo(deadline = run {
-                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                    formatter.format(LocalDate.now())
+                    LocalDate.now().plusDays(2).format(
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                    )
                 }))
             }
 

@@ -1,5 +1,7 @@
 package com.kyaw.todolist.screens
 
+import android.icu.text.SimpleDateFormat
+import android.util.Log
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -42,10 +44,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -76,11 +80,12 @@ import com.kyaw.todolist.ui.theme.primaryLight
 import com.kyaw.todolist.ui.theme.scrimLight
 import com.kyaw.todolist.ui.theme.surfaceContainerHighLight
 import com.kyaw.todolist.ui.theme.surfaceLight
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.delay
+import org.threeten.bp.Instant
+import org.threeten.bp.LocalDate
+import org.threeten.bp.ZoneId
+import org.threeten.bp.ZoneOffset
+import org.threeten.bp.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -126,14 +131,16 @@ fun EditTodoScreen(
                 }
             )
 
-            Deadline(
-                modifier = Modifier.padding(16.dp),
-                deadline = state.value.todo?.deadline ?: "",
-                onDateSelected = {
-                    onAction(TodoEvent.EditingDeadline(it))
-                }
-            )
-
+            key(state.value.todo?.deadline) {
+                Deadline(
+                    modifier = Modifier.padding(16.dp),
+                    deadline = state.value.todo?.deadline.orEmpty(),
+                    onDateSelected = {
+                        onAction(TodoEvent.EditingDeadline(it))
+                    }
+                )
+            }
+//
             Note(
                 modifier = Modifier.padding(16.dp),
                 note = state.value.todo?.note ?: "",
@@ -146,7 +153,6 @@ fun EditTodoScreen(
 
     LaunchedEffect(Unit) {
         id?.let { onAction(TodoEvent.EditTodo(it)) }
-        onAction(TodoEvent.ValidateFormField)
     }
 }
 
@@ -214,19 +220,10 @@ private fun Deadline(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = dateToMilliseconds(deadline),
+        initialSelectedDateMillis = convertDateToMillis(deadline),
         selectableDates = PresentOrFutureSelectableDates
     )
-    val selectedDate = remember {
-        derivedStateOf {
-            datePickerState.selectedDateMillis?.let {
-                val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                val date = LocalDate.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
-                formatter.format(date)
-
-            } ?: "dd/mm/yyyy"
-        }
-    }
+    var selectedDate by remember { mutableStateOf(deadline) }
 
     Column(modifier = modifier) {
         Row(
@@ -262,7 +259,7 @@ private fun Deadline(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(12.dp),
-                text = selectedDate.value,
+                text = selectedDate,
                 fontFamily = FontFamily.SansSerif,
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
@@ -277,7 +274,10 @@ private fun Deadline(
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            onDateSelected(selectedDate.value)
+                             datePickerState.selectedDateMillis?.let {
+                                selectedDate = convertMillisToDate(it)
+                                 onDateSelected(selectedDate)
+                            }
                             showDatePicker = false
                         }) {
                         Text(
@@ -311,13 +311,32 @@ private fun Deadline(
 
 fun dateToMilliseconds(dateString: String): Long? {
     return try {
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val date = dateFormat.parse(dateString)
-        date?.time
+        val instant = Instant.from(LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+        instant.toEpochMilli()
     } catch (e: Exception) {
         e.printStackTrace()
         null
     }
+}
+
+fun convertMillisToDate(millis: Long): String {
+    // Handle UTC Zone format
+    val zonedDate = Instant
+        .ofEpochMilli(millis)
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+    val localDate = zonedDate.atStartOfDay(ZoneId.systemDefault())
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault())
+    return formatter.format(localDate)
+}
+
+fun convertDateToMillis(date: String): Long? {
+    if (date.isEmpty()) {
+        return null
+    }
+
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    return formatter.parse(date).time
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -465,6 +484,7 @@ private fun TitleTextField(modifier: Modifier, todoTitle: String, onValueChange:
     )
 
     LaunchedEffect(Unit) {
+        delay(5000)
         focusRequester.requestFocus()
     }
 }

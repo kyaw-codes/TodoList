@@ -65,6 +65,7 @@ dependencies {
     // To use Kotlin annotation processing tool (kapt)
     ksp("androidx.room:room-compiler:$room_version")
 
+    implementation(libs.threetenabp)
 
     implementation(libs.androidx.compose.constraintlayout)
 

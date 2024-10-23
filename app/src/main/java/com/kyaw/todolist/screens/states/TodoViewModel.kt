@@ -1,5 +1,6 @@
 package com.kyaw.todolist.screens.states
 
+import android.icu.text.SimpleDateFormat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -17,8 +18,11 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 
 class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
 
@@ -38,8 +42,8 @@ class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
 
                 TodoEvent.AddNewButtonTap -> _state.update {
                     it.copy(todo = Todo(deadline = run {
-                        LocalDate.now().plusDays(2).format(
-                            DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(
+                            Date.from(Instant.now())
                         )
                     }))
                 }
@@ -88,7 +92,12 @@ class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
                 }
 
                 is TodoEvent.EditTodo -> repo.getById(event.id)?.let { data ->
-                    _state.update { it.copy(todo = data) }
+                    _state.update {
+                        it.copy(
+                            todo = data,
+                            enableSaveButton = _state.value.todo?.isValid() ?: false
+                        )
+                    }
                 }
 
                 is TodoEvent.ValidateFormField -> {

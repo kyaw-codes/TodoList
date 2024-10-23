@@ -3,10 +3,10 @@ package com.kyaw.todolist.repository
 import com.kyaw.todolist.data.Todo
 
 interface TodoRepository {
-    fun addNew(todo: Todo)
-    fun save(todo: Todo)
-    fun getAll(): List<Todo>
-    fun getById(id: Int): Todo?
-    fun toggle(id: Int)
+    suspend fun addNew(todo: Todo)
+    suspend fun update(todo: Todo)
+    suspend fun getAll(): List<Todo>
+    suspend fun getById(id: Int): Todo?
+    suspend fun toggle(id: Int)
+    suspend fun delete(todo: Int)
 }
-

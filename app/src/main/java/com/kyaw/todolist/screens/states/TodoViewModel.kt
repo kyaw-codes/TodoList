@@ -1,6 +1,5 @@
 package com.kyaw.todolist.screens.states
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer

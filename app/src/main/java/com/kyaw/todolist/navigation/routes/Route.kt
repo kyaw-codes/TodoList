@@ -1,4 +1,4 @@
-package com.kyaw.todolist.routes
+package com.kyaw.todolist.navigation.routes
 
 import kotlinx.serialization.Serializable
 

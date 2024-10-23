@@ -7,7 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.kyaw.todolist.screens.AppNavHostScreen
+import com.kyaw.todolist.navigation.AppNavHostScreen
 import com.kyaw.todolist.screens.states.TodoViewModel
 import com.kyaw.todolist.ui.theme.TodoListTheme
 

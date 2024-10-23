@@ -19,9 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -38,7 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -54,7 +51,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyaw.todolist.R
-import com.kyaw.todolist.data.Priority.Medium
 import com.kyaw.todolist.data.Todo
 import com.kyaw.todolist.screens.states.TodoEvent
 import com.kyaw.todolist.screens.states.TodoState
@@ -66,7 +62,6 @@ import com.kyaw.todolist.ui.theme.secondaryContainerLight
 import com.kyaw.todolist.ui.theme.surfaceContainerLowLight
 import com.kyaw.todolist.ui.theme.surfaceLight
 import com.kyaw.todolist.ui.theme.tertiaryContainerLightMediumContrast
-import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun TodoListScreen(

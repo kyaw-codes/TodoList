@@ -1,6 +1,5 @@
 package com.kyaw.todolist.repository
 
-import android.util.Log
 import com.kyaw.todolist.data.Todo
 
 object InMemoryTodoRepo: TodoRepository {

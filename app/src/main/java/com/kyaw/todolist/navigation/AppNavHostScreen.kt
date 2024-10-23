@@ -1,4 +1,4 @@
-package com.kyaw.todolist.screens
+package com.kyaw.todolist.navigation
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -10,7 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.kyaw.todolist.routes.Route
+import com.kyaw.todolist.navigation.routes.Route
+import com.kyaw.todolist.screens.EditTodoScreen
+import com.kyaw.todolist.screens.TodoListScreen
 import com.kyaw.todolist.screens.states.TodoViewModel
 
 @Composable

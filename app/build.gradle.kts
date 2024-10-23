@@ -65,6 +65,9 @@ dependencies {
     // To use Kotlin annotation processing tool (kapt)
     ksp("androidx.room:room-compiler:$room_version")
 
+
+    implementation(libs.androidx.compose.constraintlayout)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

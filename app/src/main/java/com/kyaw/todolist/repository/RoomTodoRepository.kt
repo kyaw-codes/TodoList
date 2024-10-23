@@ -26,7 +26,8 @@ class RoomTodoRepository(private val dao: TodoDao) : TodoRepository {
         }
     }
 
-    override suspend fun delete(id: Int) {
+    override suspend fun delete(id: Int): List<Todo> {
         dao.deleteById(id)
+        return getAll()
     }
 }

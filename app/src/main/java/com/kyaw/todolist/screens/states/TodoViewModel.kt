@@ -22,14 +22,10 @@ import java.time.format.DateTimeFormatter
 class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
 
     private var _state = MutableStateFlow(TodoState())
-    val state: StateFlow<TodoState> = _state
-        .onStart {
+    val state: StateFlow<TodoState> = _state.onStart {
             action(TodoEvent.GetAllTodos)
-        }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            TodoState()
+        }.stateIn(
+            viewModelScope, SharingStarted.WhileSubscribed(5000), TodoState()
         )
 
     fun action(event: TodoEvent) {
@@ -99,6 +95,13 @@ class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
                         it.copy(enableSaveButton = _state.value.todo?.isValid() ?: false)
                     }
                 }
+
+                is TodoEvent.DeleteTodo -> {
+                    val list = repo.delete(event.id)
+                    _state.update {
+                        it.copy(todoList = list)
+                    }
+                }
             }
         }
     }
@@ -106,7 +109,8 @@ class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val providers : TodoProviders = TodoProviders(this[APPLICATION_KEY]!!.applicationContext)
+                val providers: TodoProviders =
+                    TodoProviders(this[APPLICATION_KEY]!!.applicationContext)
                 val repo = providers.repository()
 
                 TodoViewModel(repo)

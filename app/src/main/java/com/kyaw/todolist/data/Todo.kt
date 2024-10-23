@@ -12,5 +12,5 @@ data class Todo(
     val note: String = "",
     var finished: Boolean = false
 ) {
-    fun isValid(): Boolean = title.isNotBlank() && deadline.isNotBlank() && note.isNotBlank()
+    fun isValid(): Boolean = title.isNotBlank() && deadline.isNotBlank()
 }

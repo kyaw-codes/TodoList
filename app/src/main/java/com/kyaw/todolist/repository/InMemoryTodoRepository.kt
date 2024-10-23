@@ -28,7 +28,8 @@ class InMemoryTodoRepository : TodoRepository {
         list[index] = item.copy(finished = !item.finished)
     }
 
-    override suspend fun delete(todo: Int) {
+    override suspend fun delete(todo: Int): List<Todo> {
         list.removeAll { it.id == todo }
+        return getAll()
     }
 }

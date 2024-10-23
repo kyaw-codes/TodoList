@@ -146,6 +146,7 @@ fun EditTodoScreen(
 
     LaunchedEffect(Unit) {
         id?.let { onAction(TodoEvent.EditTodo(it)) }
+        onAction(TodoEvent.ValidateFormField)
     }
 }
 

@@ -8,5 +8,5 @@ interface TodoRepository {
     suspend fun getAll(): List<Todo>
     suspend fun getById(id: Int): Todo?
     suspend fun toggle(id: Int)
-    suspend fun delete(todo: Int)
+    suspend fun delete(todo: Int): List<Todo>
 }

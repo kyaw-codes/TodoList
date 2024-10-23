@@ -261,7 +261,7 @@ fun TodoItem(
         Spacer(Modifier.width(8.dp))
         Column {
             Text(
-                todo.name,
+                todo.title,
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
                 color = primaryLight,

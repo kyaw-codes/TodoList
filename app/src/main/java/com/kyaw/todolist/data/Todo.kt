@@ -1,12 +1,16 @@
 package com.kyaw.todolist.data
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
 data class Todo(
-    val id: Int = 0,
-    val name: String = "",
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val title: String = "",
     val priority: Priority = Priority.Low,
     val deadline: String = "",
     val note: String = "",
     var finished: Boolean = false
 ) {
-    fun isValid(): Boolean = name.isNotBlank() && deadline.isNotBlank() && note.isNotBlank()
+    fun isValid(): Boolean = title.isNotBlank() && deadline.isNotBlank() && note.isNotBlank()
 }

@@ -114,7 +114,7 @@ fun EditTodoScreen(
                 .verticalScroll(scrollState)
                 .padding(innerPadding)
         ) {
-            TitleTextField(modifier, todoTitle = state.value.todo?.name ?: "") {
+            TitleTextField(modifier, todoTitle = state.value.todo?.title ?: "") {
                 onAction(TodoEvent.EditingName(it))
             }
 

@@ -80,7 +80,7 @@ class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
 
             is TodoEvent.ToggleTodo -> {
                 repo.toggle(event.data.id)
-                _state.update { TodoState(todoList = repo.getAll()) }
+                action(TodoEvent.GetAllTodos)
             }
 
             is TodoEvent.EditTodo -> repo.getById(event.id)?.let { data ->

@@ -19,7 +19,8 @@ object InMemoryTodoRepo: TodoRepository {
     }
 
     override fun getAll(): List<Todo> {
-        return todos
+        // Avoid passing the direct reference to `todos` list as it conflicts with the state
+        return todos.toList()
     }
 
     override fun getById(id: Int): Todo? {

@@ -13,4 +13,5 @@ sealed interface TodoEvent {
     data class EditingNote(val value: String): TodoEvent
     data object SaveTodo: TodoEvent
     data class ToggleTodo(val data: Todo): TodoEvent
+    data object ValidateFormField: TodoEvent
 }

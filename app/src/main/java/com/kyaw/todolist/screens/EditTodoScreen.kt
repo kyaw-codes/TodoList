@@ -1,6 +1,5 @@
 package com.kyaw.todolist.screens
 
-import android.util.Log
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -104,7 +104,8 @@ fun EditTodoScreen(
                 onAction(TodoEvent.SaveTodo)
                 onBack()
             },
-            scrollState = scrollState
+            scrollState = scrollState,
+            state = state
         )
     }) { innerPadding ->
         Column(
@@ -114,7 +115,6 @@ fun EditTodoScreen(
                 .padding(innerPadding)
         ) {
             TitleTextField(modifier, todoTitle = state.value.todo?.name ?: "") {
-                Log.d("stateDebug", "Name editing event sent.")
                 onAction(TodoEvent.EditingName(it))
             }
 
@@ -265,7 +265,7 @@ private fun Deadline(
                 fontFamily = FontFamily.SansSerif,
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
-                color = onSurfaceVariantLight,
+                color = onSurfaceVariantLight, // outlineVariantLight
                 textAlign = TextAlign.Start
             )
         }
@@ -470,7 +470,12 @@ private fun TitleTextField(modifier: Modifier, todoTitle: String, onValueChange:
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppBar(onBack: () -> Unit = {}, onSave: () -> Unit, scrollState: ScrollState) {
+private fun AppBar(
+    onBack: () -> Unit = {},
+    onSave: () -> Unit,
+    scrollState: ScrollState,
+    state: State<TodoState>
+) {
     androidx.compose.material3.TopAppBar(
         title = {
             Text("")
@@ -488,13 +493,14 @@ private fun AppBar(onBack: () -> Unit = {}, onSave: () -> Unit, scrollState: Scr
             }
         },
         actions = {
-            TextButton(onClick = onSave) {
+            TextButton(onClick = onSave, enabled = state.value.enableSaveButton) {
                 Text(
                     "Save",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = FontFamily.SansSerif,
-                    color = if (scrollState.value > 0) Color.White else primaryLight
+                    color = if (scrollState.value > 0) Color.White else primaryLight,
+                    modifier = Modifier.alpha(if (state.value.enableSaveButton) 1f else 0.5f)
                 )
             }
         }

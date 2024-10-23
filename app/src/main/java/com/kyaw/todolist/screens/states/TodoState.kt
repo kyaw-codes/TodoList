@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 data class TodoState(
     val todo: Todo? = null,
     val todoList: List<Todo> = emptyList(),
-    val errorMessage: String? = null
+    val enableSaveButton: Boolean = false
 ) : UIState
 
 interface UIState {}

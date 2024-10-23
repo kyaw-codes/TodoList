@@ -10,8 +10,13 @@ import com.kyaw.todolist.repository.TodoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Date
 
-class TodoViewModel(private val repo: TodoRepository): ViewModel() {
+class TodoViewModel(private val repo: TodoRepository) : ViewModel() {
 
 
     private var _state = MutableStateFlow(TodoState())
@@ -22,21 +27,42 @@ class TodoViewModel(private val repo: TodoRepository): ViewModel() {
             TodoEvent.GetAllTodos -> _state.update {
                 TodoState(todoList = repo.getAll())
             }
+
             TodoEvent.AddNewButtonTap -> _state.update {
-                it.copy(todo = Todo())
+                it.copy(todo = Todo(deadline = run {
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                    formatter.format(LocalDate.now())
+                }))
             }
-            is TodoEvent.EditingDeadline -> _state.update {
-                it.copy(todo = it.todo?.copy(deadline = event.value))
+
+            is TodoEvent.EditingDeadline -> {
+                _state.update {
+                    it.copy(todo = it.todo?.copy(deadline = event.value))
+                }
+                action(TodoEvent.ValidateFormField)
             }
-            is TodoEvent.EditingName -> _state.update {
-                it.copy(todo = it.todo?.copy(name = event.value))
+
+            is TodoEvent.EditingName -> {
+                _state.update {
+                    it.copy(todo = it.todo?.copy(name = event.value))
+                }
+                action(TodoEvent.ValidateFormField)
             }
-            is TodoEvent.EditingNote -> _state.update {
-                it.copy(todo = it.todo?.copy(note = event.value))
+
+            is TodoEvent.EditingNote -> {
+                _state.update {
+                    it.copy(todo = it.todo?.copy(note = event.value))
+                }
+                action(TodoEvent.ValidateFormField)
             }
-            is TodoEvent.EditingPriority -> _state.update {
-                it.copy(todo = it.todo?.copy(priority = event.priority))
+
+            is TodoEvent.EditingPriority -> {
+                _state.update {
+                    it.copy(todo = it.todo?.copy(priority = event.priority))
+                }
+                action(TodoEvent.ValidateFormField)
             }
+
             TodoEvent.SaveTodo -> _state.value.todo?.let {
                 // id == 0 means a new todo
                 if (it.id == 0) {
@@ -54,6 +80,12 @@ class TodoViewModel(private val repo: TodoRepository): ViewModel() {
 
             is TodoEvent.EditTodo -> repo.getById(event.id)?.let { data ->
                 _state.update { it.copy(todo = data) }
+            }
+
+            is TodoEvent.ValidateFormField -> {
+                _state.update {
+                    it.copy(enableSaveButton = _state.value.todo?.isValid() ?: false)
+                }
             }
         }
     }

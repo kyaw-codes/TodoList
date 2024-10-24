@@ -335,8 +335,10 @@ fun convertDateToMillis(date: String): Long? {
         return null
     }
 
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    return formatter.parse(date).time
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault())
+    val zonedDate = LocalDate.parse(date, formatter)
+        .atStartOfDay(ZoneOffset.UTC)
+    return zonedDate.toEpochSecond() * 1000
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
